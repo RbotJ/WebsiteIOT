@@ -6,6 +6,7 @@ require('dotenv').config();
 // Use MYSQL_URL if available, fallback to DATABASE_URL
 const databaseUrl = process.env.MYSQL_URL || process.env.DATABASE_URL;
 
+// Parse MySQL connection URL
 const parseDatabaseUrl = (url) => {
     try {
         const { hostname, port, pathname, username, password } = new URL(url);
@@ -18,7 +19,7 @@ const parseDatabaseUrl = (url) => {
             waitForConnections: true,
             connectionLimit: 10,
             queueLimit: 0,
-            ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false // Enable SSL in production
+            ssl: process.env.DB_USE_SSL === "true" ? { rejectUnauthorized: false } : false // Use SSL only if specified
         };
     } catch (err) {
         console.error("❌ Invalid DATABASE_URL format:", err.message);
@@ -26,9 +27,13 @@ const parseDatabaseUrl = (url) => {
     }
 };
 
-// Create MySQL connection pool
-const pool = mysql.createPool(parseDatabaseUrl(databaseUrl));
+// Store parsed connection details
+const dbConfig = parseDatabaseUrl(databaseUrl);
 
+// Create MySQL connection pool
+const pool = mysql.createPool(dbConfig);
+
+// Function to connect to MySQL
 const connectDB = async (retries = 5) => {
     while (retries) {
         let conn;
@@ -42,7 +47,7 @@ const connectDB = async (retries = 5) => {
         } catch (err) {
             console.error(`❌ Database connection failed: ${err.message}`);
             retries -= 1;
-            if (conn) conn.release(); // Ensure connection is released
+            if (conn) conn.release();
             if (retries > 0) {
                 console.log(`🔄 Retrying... (${5 - retries}/5) in 5 seconds`);
                 await new Promise(res => setTimeout(res, 5000)); // Wait 5 sec before retrying
@@ -57,8 +62,9 @@ const connectDB = async (retries = 5) => {
 // Auto-run `init.sql` if present
 const runMigrations = async () => {
     try {
-        if (fs.existsSync('./scripts/init.sql')) {
-            const sql = fs.readFileSync('./scripts/init.sql', 'utf8');
+        const initScriptPath = './scripts/init.sql';
+        if (fs.existsSync(initScriptPath)) {
+            const sql = fs.readFileSync(initScriptPath, 'utf8');
             await pool.query(sql);
             console.log('✅ Database initialized successfully');
         } else {
@@ -69,8 +75,8 @@ const runMigrations = async () => {
     }
 };
 
-// Log parsed connection details (excluding password)
-console.log(`🔍 Connecting to MySQL @ ${parseDatabaseUrl(databaseUrl).host}:${parseDatabaseUrl(databaseUrl).port}`);
+// Log connection details (excluding password)
+console.log(`🔍 Connecting to MySQL @ ${dbConfig.host}:${dbConfig.port} as ${dbConfig.user}`);
 
 connectDB();
 
