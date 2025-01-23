@@ -4,7 +4,7 @@ require('dotenv').config();
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
-        rejectUnauthorized: false
+        rejectUnauthorized: false, // Required for Railway-hosted databases
     }
 });
 
@@ -13,7 +13,7 @@ const connectDB = async () => {
         await pool.query('SELECT NOW()');
         console.log('PostgreSQL Connected');
     } catch (err) {
-        console.error(err.message);
+        console.error('Database connection error:', err);
         process.exit(1);
     }
 };
