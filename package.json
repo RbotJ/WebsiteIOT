@@ -4,7 +4,7 @@
   "description": "Backend for IoT Platform",
   "main": "backend/server.js",  
   "scripts": {
-    "start": "node backend/server.js",
+    "start": "node backend/server.js && node monitorBackend.js",
     "dev": "nodemon backend/server.js", 
     "monitor": "node backend/monitorBackend.js"
   },
