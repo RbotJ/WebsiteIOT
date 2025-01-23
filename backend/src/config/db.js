@@ -9,17 +9,17 @@ const databaseUrl = process.env.MYSQL_URL || process.env.DATABASE_URL;
 // Parse MySQL connection URL
 const parseDatabaseUrl = (url) => {
     try {
-        const { hostname, port, pathname, username, password } = new URL(url);
+        const dbUrl = new URL(url);
         return {
-            host: hostname,
-            port: port || 3306,
-            user: username || 'root',
-            password: password || '',
-            database: pathname.replace('/', ''), // Remove leading "/"
+            host: dbUrl.hostname,
+            port: dbUrl.port || 3306,
+            user: decodeURIComponent(dbUrl.username) || 'root', // Ensure special characters work
+            password: decodeURIComponent(dbUrl.password) || '',
+            database: dbUrl.pathname.replace('/', ''), // Remove leading "/"
             waitForConnections: true,
             connectionLimit: 10,
             queueLimit: 0,
-            ssl: process.env.DB_USE_SSL === "true" ? { rejectUnauthorized: false } : false // Use SSL only if specified
+            ssl: process.env.DB_USE_SSL === "true" ? { rejectUnauthorized: false } : false
         };
     } catch (err) {
         console.error("❌ Invalid DATABASE_URL format:", err.message);
@@ -50,10 +50,10 @@ const connectDB = async (retries = 5) => {
             if (conn) conn.release();
             if (retries > 0) {
                 console.log(`🔄 Retrying... (${5 - retries}/5) in 5 seconds`);
-                await new Promise(res => setTimeout(res, 5000)); // Wait 5 sec before retrying
+                await new Promise(res => setTimeout(res, 5000));
             } else {
-                console.error("❌ Unable to connect to MySQL after multiple attempts. Exiting.");
-                process.exit(1);
+                console.error("❌ Unable to connect to MySQL after multiple attempts. Continuing without DB.");
+                return; // Allow server to run without database
             }
         }
     }
@@ -64,6 +64,7 @@ const runMigrations = async () => {
     try {
         const initScriptPath = './scripts/init.sql';
         if (fs.existsSync(initScriptPath)) {
+            console.log(`🔄 Running database migrations from ${initScriptPath}`);
             const sql = fs.readFileSync(initScriptPath, 'utf8');
             await pool.query(sql);
             console.log('✅ Database initialized successfully');
@@ -71,12 +72,18 @@ const runMigrations = async () => {
             console.warn('⚠️ No `init.sql` found. Skipping database initialization.');
         }
     } catch (err) {
-        console.error('❌ Database initialization error:', err.message);
+        console.error(`❌ Database initialization error: ${err.message}`);
+        console.error("🔍 Failing SQL command:", err.sql || "Unknown query");
     }
 };
 
 // Log connection details (excluding password)
 console.log(`🔍 Connecting to MySQL @ ${dbConfig.host}:${dbConfig.port} as ${dbConfig.user}`);
+
+(async () => {
+    await connectDB();
+    console.log("🚀 Database setup complete. Backend starting...");
+})();
 
 connectDB();
 
