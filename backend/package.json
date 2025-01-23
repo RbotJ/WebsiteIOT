@@ -16,13 +16,13 @@
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
-    "mysql2": "^3.3.0",  // Added mysql2 for MySQL database connections
+    "mysql2": "^3.3.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.0"    // Added nodemon for development
+    "nodemon": "^3.0.0"
   },
   "engines": {
-    "node": ">=18.20.5 <19.0.0" // Specifies compatible Node.js versions
+    "node": ">=18.20.5 <19.0.0"
   },
   "repository": {
     "type": "git",
