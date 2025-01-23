@@ -1,6 +1,7 @@
+//monitorBackend.js
 const axios = require('axios');
 
-const BACKEND_URL = "https://websiteit-production.up.railway.app"; // Update this
+const BACKEND_URL = process.env.BACKEND_URL || "https://websiteit-production.up.railway.app"; // Use env var
 
 const endpoints = [
     { name: "Root API", path: "/", method: "GET" },
@@ -19,14 +20,15 @@ async function checkEndpoint(endpoint) {
         };
 
         const response = await axios(config);
+        const timestamp = new Date().toISOString();
 
         if (response.status >= 200 && response.status < 300) {
-            console.log(`✅ ${endpoint.name} is working (Status: ${response.status})`);
+            console.log(`✅ [${timestamp}] ${endpoint.name} is working (Status: ${response.status})`);
         } else {
-            console.log(`❌ ${endpoint.name} failed (Status: ${response.status})`);
+            console.log(`❌ [${timestamp}] ${endpoint.name} failed (Status: ${response.status})`);
         }
     } catch (error) {
-        console.log(`⚠️ Error reaching ${endpoint.name}: ${error.message}`);
+        console.log(`⚠️ [${new Date().toISOString()}] Error reaching ${endpoint.name}: ${error.message}`);
     }
 }
 
@@ -38,4 +40,5 @@ async function runChecks() {
     console.log("✅ Backend monitoring completed.");
 }
 
-runChecks();
+// Run the script after a short delay to allow Railway to initialize (optional)
+setTimeout(runChecks, 5000);

@@ -1,11 +1,20 @@
+//server.js
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { connectDB } = require('./src/config/db');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Log server startup
+console.log('🚀 Starting server...');
+
+// Check database connection
+connectDB().then(() => console.log('✅ Database connected successfully'))
+          .catch(err => console.error('❌ Database connection failed:', err.message));
 
 // Serve Static Files (If Needed)
 const frontendPath = path.join(__dirname, 'public');
@@ -23,6 +32,7 @@ app.use('/api/test', testRoutes);
 
 // API Route Example
 app.get('/api', (req, res) => {
+    console.log('✅ API status check hit');
     res.json({ message: 'API is running...' });
 });
 
