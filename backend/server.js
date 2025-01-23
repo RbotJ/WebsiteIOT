@@ -8,24 +8,30 @@ app.use(cors());
 app.use(express.json());
 
 // Serve Static Files (If Needed)
-const frontendPath = path.join(__dirname, 'public');  // Ensure index.html is inside 'public'
+const frontendPath = path.join(__dirname, 'public');
 app.use(express.static(frontendPath));
+
+// Import Routes
+const authRoutes = require('./src/routes/authRoutes');  
+const deviceRoutes = require('./src/routes/deviceRoutes');
+const testRoutes = require('./src/routes/testRoutes');  
+
+// Use Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/devices', deviceRoutes);
+app.use('/api/test', testRoutes);
 
 // API Route Example
 app.get('/api', (req, res) => {
     res.json({ message: 'API is running...' });
 });
 
-// Catch-All Route (Avoids Overriding API Routes)
-app.get('*', (req, res) => {
-    res.sendFile(path.join(frontendPath, 'index.html'));
+// Catch-All for Non-API Routes (Only If Not an API Call)
+app.get('*', (req, res, next) => {
+    if (req.originalUrl.startsWith('/api')) return next(); // Allow API routes to be handled
+    res.sendFile(path.join(frontendPath, 'index.html')); // Serve frontend
 });
 
-// Start Server
+// Start Server (Placing at the end ensures routes are loaded first)
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
-//testRoutes
-const testRoutes = require('./src/routes/testRoutes');
-app.use('/api/test', testRoutes);
-
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
