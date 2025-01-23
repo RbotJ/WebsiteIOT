@@ -6,8 +6,8 @@ const registerUser = async (req, res) => {
     const { email, password } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await pool.query(
-            'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *',
+        const [newUser] = await pool.execute(
+            'INSERT INTO users (email, password) VALUES (?, ?)',
             [email, hashedPassword]
         );
         res.json(newUser.rows[0]);
@@ -19,7 +19,7 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
     try {
-        const user = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        const user = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
         if (user.rows.length === 0) return res.status(400).json({ message: 'User not found' });
 
         const isMatch = await bcrypt.compare(password, user.rows[0].password);

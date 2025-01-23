@@ -13,7 +13,7 @@ const registerDevice = async (req, res) => {
     const { device_code } = req.body;
     try {
         const newDevice = await pool.query(
-            'INSERT INTO devices (device_code, status) VALUES ($1, $2) RETURNING *',
+            'INSERT INTO devices (device_code, status) VALUES (?, ?)',
             [device_code, 'offline']
         );
         res.json(newDevice.rows[0]);

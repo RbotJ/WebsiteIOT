@@ -1,24 +1,24 @@
 //db.js
 const mysql = require('mysql2/promise');
+const fs = require('fs');
 require('dotenv').config();
 
 // Use MYSQL_URL if available, fallback to DATABASE_URL
 const databaseUrl = process.env.MYSQL_URL || process.env.DATABASE_URL;
 
-// Parse DATABASE_URL for explicit connection options (fixes compatibility issues)
 const parseDatabaseUrl = (url) => {
     try {
         const { hostname, port, pathname, username, password } = new URL(url);
         return {
             host: hostname,
             port: port || 3306,
-            user: username,
-            password,
+            user: username || 'root',
+            password: password || '',
             database: pathname.replace('/', ''), // Remove leading "/"
             waitForConnections: true,
             connectionLimit: 10,
             queueLimit: 0,
-            ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false // Enable SSL only in production
+            ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false // Enable SSL in production
         };
     } catch (err) {
         console.error("❌ Invalid DATABASE_URL format:", err.message);
@@ -37,6 +37,7 @@ const connectDB = async (retries = 5) => {
             const [rows] = await conn.query('SELECT NOW() AS now');
             console.log(`✅ MySQL Connected: ${rows[0].now}`);
             conn.release();
+            await runMigrations(); // Ensure tables exist
             return;
         } catch (err) {
             console.error(`❌ Database connection failed: ${err.message}`);
@@ -53,7 +54,24 @@ const connectDB = async (retries = 5) => {
     }
 };
 
-// Log connection status when module is loaded
+// Auto-run `init.sql` if present
+const runMigrations = async () => {
+    try {
+        if (fs.existsSync('./scripts/init.sql')) {
+            const sql = fs.readFileSync('./scripts/init.sql', 'utf8');
+            await pool.query(sql);
+            console.log('✅ Database initialized successfully');
+        } else {
+            console.warn('⚠️ No `init.sql` found. Skipping database initialization.');
+        }
+    } catch (err) {
+        console.error('❌ Database initialization error:', err.message);
+    }
+};
+
+// Log parsed connection details (excluding password)
+console.log(`🔍 Connecting to MySQL @ ${parseDatabaseUrl(databaseUrl).host}:${parseDatabaseUrl(databaseUrl).port}`);
+
 connectDB();
 
 module.exports = { pool, connectDB };
