@@ -16,9 +16,9 @@ The IoT platform is a centralized system for managing and monitoring ESP32 IoT d
 
 - **Frontend:** Angular
 - **Backend:** NodeJS (ExpressJS)
-- **Database:** PostgreSQL (Railway Managed), Redis (Caching & Session Management)
+- **Database:** MySQL (Railway Managed), Redis (Caching & Session Management)
 - **Message Broker:** MQTT (Mosquitto) for real-time device communication
-- **Firmware Storage:** AWS S3 / Railway Storage
+- **Firmware Storage:** Railway Storage
 - **Authentication:** JWT-based user authentication
 - **Device Communication:** WebSockets + REST API
 - **Logging & Monitoring:** Prometheus/Grafana, Logflare (Railway Integration)
@@ -50,9 +50,9 @@ This roadmap breaks down the development into **small, manageable tasks** suitab
 
 -
 
-**Day 3: Database Setup (PostgreSQL on Railway) (Completed Tasks)**
+**Day 3: Database Setup (MySQL on Railway) (Completed Tasks)**
 
-- [x] Created a **PostgreSQL database** on Railway.
+- [x] Created a **MySQL database** on Railway.
 - [x] Connected to the database using **pgAdmin** or **DBeaver**.
 - [x] Implemented a database connection file (`src/config/db.js`).
 - [x] Created initial database tables for `users` and `devices`.
@@ -77,7 +77,7 @@ By completing these steps, the backend API will be functional with user authenti
 
 -
 
-#### **3. Database Setup (PostgreSQL on Railway)**
+#### **3. Database Setup (MySQL on Railway)**
 
 -
 
@@ -158,13 +158,13 @@ By completing these steps, the backend API will be functional with user authenti
 
 ---
 
-## **4. Database Schema (PostgreSQL)**
+## **4. Database Schema (MySQL)**
 
 ### **Users Table**
 
 ```sql
 CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
     password TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -174,14 +174,15 @@ CREATE TABLE users (
 ### **Devices Table**
 
 ```sql
-CREATE TABLE devices (
-    id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+REATE TABLE devices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
     device_code VARCHAR(50) UNIQUE NOT NULL,
     status TEXT DEFAULT 'offline',
     firmware_version VARCHAR(50),
     last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 ```
 
@@ -189,7 +190,7 @@ CREATE TABLE devices (
 
 ```sql
 CREATE TABLE firmware (
-    id SERIAL PRIMARY KEY,
+    id INT AUTO_INCREMENT PRIMARY KEY,
     version VARCHAR(50) UNIQUE NOT NULL,
     file_url TEXT NOT NULL,
     uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

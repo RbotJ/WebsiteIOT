@@ -2,11 +2,11 @@
   "name": "iot-backend",
   "version": "1.0.0",
   "description": "Backend for IoT Platform",
-  "main": "backend/server.js",  
+  "main": "server.js",  
   "scripts": {
-    "start": "node backend/server.js && node monitorBackend.js",
-    "dev": "nodemon backend/server.js", 
-    "monitor": "node backend/monitorBackend.js"
+    "start": "node server.js && node monitorBackend.js",
+    "dev": "nodemon server.js", 
+    "monitor": "node monitorBackend.js"
   },
   "dependencies": {
     "axios": "^1.7.9",
