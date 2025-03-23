@@ -1,6 +1,6 @@
 {
-  "version": "v2025.03.23.205209",
-  "firmware_url": "https://github.com/RbotJ/WebsiteIOT/releases/download/v2025.03.23.205209/firmware.bin",
-  "released": "2025-03-23T20:52:50Z",
+  "version": "v2025.03.23.211528",
+  "firmware_url": "https://github.com/RbotJ/WebsiteIOT/releases/download/v2025.03.23.211528/firmware.bin",
+  "released": "2025-03-23T21:16:16Z",
   "notes": "Auto-generated OTA manifest"
 }
