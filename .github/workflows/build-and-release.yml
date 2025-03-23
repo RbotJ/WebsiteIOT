@@ -1,0 +1,58 @@
+name: Build & Release Firmware
+
+on:
+  push:
+    paths:
+      - "src/**"
+      - "platformio.ini"
+      - ".github/workflows/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.auto-version.outputs.version }}
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install PlatformIO
+      run: |
+        pip install -U platformio
+
+    - name: Auto-Generate Version
+      id: auto-version
+      run: |
+        echo "version=$(date +'%Y.%m.%d.%H%M%S')" >> $GITHUB_OUTPUT
+
+    - name: Build Firmware
+      run: platformio run
+
+    - name: Rename Firmware File
+      run: |
+        mkdir output
+        cp .pio/build/esp32-c6/firmware.bin output/firmware_${{ steps.auto-version.outputs.version }}.bin
+        cp .pio/build/esp32-c6/firmware.bin output/firmware.bin
+        echo "${{ steps.auto-version.outputs.version }}" > output/version.txt
+
+    - name: Create Release and Upload Assets
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.auto-version.outputs.version }}
+        name: "Firmware v${{ steps.auto-version.outputs.version }}"
+        body: |
+          Auto-generated firmware release.
+          Date: ${{ steps.auto-version.outputs.version }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: |
+          output/firmware_${{ steps.auto-version.outputs.version }}.bin
+          output/firmware.bin
+          output/version.txt

@@ -226,3 +226,31 @@ CREATE TABLE firmware (
 
 This structured plan helps break the project into small steps, making it manageable for an intern. Let me know if you need modifications!
 
+## Device Firmware Status 3/22/25
+-work on adding these additional features
+    🔁 Manual reboot button
+
+🔧 /reset_wifi endpoint to clear WiFi creds
+
+🧪 /test_update endpoint for debugging forced updates
+
+🗃️ Add device ID or MAC address display
+
+📅 Uptime or last reboot info
+
+📡 Scan for nearby WiFi networks
+
+Captive Portal Redirect on ESP32
+You’ll need to:
+
+Serve a simple web page on /
+
+Respond to DNS requests to redirect all hostnames to your ESP32 (aka "DNS hijacking")
+
+Trigger the device’s captive portal detection by handling common URLs
+
+-Add custom styling or branding to that page?
+
+-Serve it from SPIFFS so it looks like a full app?
+
+-Auto-reboot after successful save?
