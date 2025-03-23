@@ -1,6 +1,7 @@
-//third test push - removed build file
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
@@ -20,6 +21,7 @@
 #define MANIFEST_URL "https://raw.githubusercontent.com/RbotJ/WebsiteIOT/main/firmware/c6-wroom-1/manifest.json"
 
 static const char *TAG = "OTA";
+
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 static const char current_version[] = TOSTRING(FIRMWARE_VERSION);
@@ -27,7 +29,7 @@ static const char current_version[] = TOSTRING(FIRMWARE_VERSION);
 char latest_version[32] = {0};
 bool update_available = false;
 
-bool check_for_update(char *latest_version_out, char *firmware_url) {
+bool check_for_update(char *latest_version_out, char *firmware_url_out) {
     esp_http_client_config_t config = {
         .url = MANIFEST_URL,
     };
@@ -72,6 +74,7 @@ bool check_for_update(char *latest_version_out, char *firmware_url) {
 
     const cJSON *ver = cJSON_GetObjectItemCaseSensitive(root, "version");
     const cJSON *url = cJSON_GetObjectItemCaseSensitive(root, "firmware_url");
+
     if (!cJSON_IsString(ver) || !cJSON_IsString(url)) {
         ESP_LOGE(TAG, "Invalid JSON format");
         cJSON_Delete(root);
@@ -79,20 +82,20 @@ bool check_for_update(char *latest_version_out, char *firmware_url) {
         return false;
     }
 
-    strncpy(latest_version_out, ver->valuestring, sizeof(latest_version_out) - 1);
-    latest_version_out[sizeof(latest_version_out) - 1] = '\0';
-    strncpy(firmware_url, url->valuestring, 255);
-    firmware_url[255] = '\0';
+    snprintf(latest_version_out, 32, "%s", ver->valuestring);
+    snprintf(firmware_url_out, 256, "%s", url->valuestring);
 
     cJSON_Delete(root);
     esp_http_client_cleanup(client);
-    return strcmp(current_version, latest_version_out) != 0;
+
+    int cmp = strcmp(current_version, latest_version_out);
+    return cmp < 0;
 }
 
 void do_ota_update(const char *url) {
     esp_http_client_config_t http_config = {
         .url = url,
-        .cert_pem = NULL, // Replace with your certificate if needed
+        .cert_pem = NULL, // Replace with GitHub root certificate for production
     };
 
     esp_https_ota_config_t ota_config = {
@@ -128,6 +131,8 @@ esp_err_t trigger_update_handler(httpd_req_t *req) {
     char firmware_url[256];
     if (check_for_update(latest_version, firmware_url)) {
         update_available = true;
+        httpd_resp_send(req, "Updating firmware...\n", HTTPD_RESP_USE_STRLEN);
+        vTaskDelay(pdMS_TO_TICKS(500));  // Ensure response is sent before restarting
         do_ota_update(firmware_url);
     } else {
         httpd_resp_send(req, "No update available.\n", HTTPD_RESP_USE_STRLEN);
