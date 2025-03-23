@@ -1,57 +1,66 @@
-name: Build & Release Firmware
+name: Build & Release ESP32-C6 Firmware
 
 on:
   push:
+    branches:
+      - main
     paths:
-      - "src/**"
-      - "platformio.ini"
-      - ".github/workflows/**"
+      - 'main/**'
+      - 'CMakeLists.txt'
+      - '.github/workflows/**'
 
 jobs:
-  build:
+  build-and-release:
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.auto-version.outputs.version }}
 
     steps:
-    - name: Checkout Code
+    - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.x'
-
-    - name: Install PlatformIO
+    - name: Set up ESP-IDF environment
       run: |
-        pip install -U platformio
+        sudo apt-get update
+        sudo apt-get install -y git wget flex bison gperf python3 python3-pip python3-setuptools cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+        git clone -b v5.1.1 --recursive https://github.com/espressif/esp-idf.git
+        ./esp-idf/install.sh
+        echo "source $GITHUB_WORKSPACE/esp-idf/export.sh" >> $GITHUB_ENV
 
-    - name: Auto-Generate Version
-      id: auto-version
-      run: |
-        echo "version=$(date +'%Y.%m.%d.%H%M%S')" >> $GITHUB_OUTPUT
+    - name: Generate Version
+      id: version
+      run: echo "VERSION=$(date +'%Y.%m.%d.%H%M%S')" >> $GITHUB_ENV
 
     - name: Build Firmware
-      run: platformio run
-
-    - name: Rename Firmware & Create Version File
       run: |
-        mkdir -p output
-        cp .pio/build/esp32-c6/firmware.bin output/firmware_${{ steps.auto-version.outputs.version }}.bin
-        cp .pio/build/esp32-c6/firmware.bin output/firmware.bin
-        echo "${{ steps.auto-version.outputs.version }}" > output/version.txt
+        source $GITHUB_WORKSPACE/esp-idf/export.sh
+        idf.py build
 
-    - name: Create Release and Upload Assets
+    - name: Prepare Output Folder
+      run: |
+        mkdir -p firmware/c6-wroom-1
+        cp build/iot_ota_controller.bin firmware/c6-wroom-1/firmware_${{ env.VERSION }}.bin
+        cp build/iot_ota_controller.bin firmware/c6-wroom-1/firmware.bin
+        echo "${{ env.VERSION }}" > firmware/c6-wroom-1/version.txt
+
+    - name: Commit Firmware Files
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add firmware/c6-wroom-1
+        git commit -m "Release firmware version ${{ env.VERSION }}"
+        git push
+
+    - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v${{ steps.auto-version.outputs.version }}
-        name: Firmware v${{ steps.auto-version.outputs.version }}
+        tag_name: v${{ env.VERSION }}
+        name: Firmware v${{ env.VERSION }}
         body: |
-          Auto-generated firmware release.
-          Timestamp: ${{ steps.auto-version.outputs.version }}
-        files: |
-          output/firmware_${{ steps.auto-version.outputs.version }}.bin
-          output/firmware.bin
-          output/version.txt
+          Auto-generated release for ESP32-C6 firmware.
+          Version: ${{ env.VERSION }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: |
+          firmware/c6-wroom-1/firmware_${{ env.VERSION }}.bin
+          firmware/c6-wroom-1/firmware.bin
+          firmware/c6-wroom-1/version.txt
