@@ -1,0 +1,15 @@
+{
+    "name": "esp-idf",
+    "image": "espressif/idf:v5.1.1",
+    "features": {
+      "ghcr.io/devcontainers/features/git:1": {}
+    },
+    "customizations": {
+      "vscode": {
+        "extensions": [
+          "espressif.esp-idf-extension"
+        ]
+      }
+    }
+  }
+  
