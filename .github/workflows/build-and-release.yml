@@ -23,7 +23,6 @@ jobs:
         sudo apt-get install -y git wget flex bison gperf python3 python3-pip python3-setuptools cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
         git clone -b v5.1.1 --recursive https://github.com/espressif/esp-idf.git
         ./esp-idf/install.sh
-        echo "source $GITHUB_WORKSPACE/esp-idf/export.sh" >> $GITHUB_ENV
 
     - name: Generate Version
       id: version
@@ -31,7 +30,7 @@ jobs:
 
     - name: Build Firmware
       run: |
-        source $GITHUB_WORKSPACE/esp-idf/export.sh
+        source ./esp-idf/export.sh
         idf.py build
 
     - name: Prepare Output Folder
@@ -50,16 +49,16 @@ jobs:
         git push
 
     - name: Create GitHub Release
-  uses: softprops/action-gh-release@v1
-  with:
-    tag_name: v${{ env.VERSION }}
-    name: Firmware v${{ env.VERSION }}
-    body: |
-      Auto-generated release for ESP32-C6 firmware.
-      Version: ${{ env.VERSION }}
-    files: |
-      firmware/c6-wroom-1/firmware_${{ env.VERSION }}.bin
-      firmware/c6-wroom-1/firmware.bin
-      firmware/c6-wroom-1/version.txt
-  env:
-    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ env.VERSION }}
+        name: Firmware v${{ env.VERSION }}
+        body: |
+          Auto-generated release for ESP32-C6 firmware.
+          Version: ${{ env.VERSION }}
+        files: |
+          firmware/c6-wroom-1/firmware_${{ env.VERSION }}.bin
+          firmware/c6-wroom-1/firmware.bin
+          firmware/c6-wroom-1/version.txt
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
