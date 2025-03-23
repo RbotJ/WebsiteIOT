@@ -34,7 +34,12 @@ jobs:
       run: echo "VERSION=$(date +'%Y.%m.%d.%H%M%S')" >> $GITHUB_ENV
 
     - name: Clean build folder
+<<<<<<< HEAD
       run: rm -rf build
+=======
+      run: |
+        rm -rf build
+>>>>>>> a21609c95f03d75f4911d452c0bd573ea7c0bce7
 
     - name: Build Firmware
       run: |
