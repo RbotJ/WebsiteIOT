@@ -1,6 +1,8 @@
 # Additional clean files
+cmake_minimum_required(VERSION 3.16)
 
-file(REMOVE_RECURSE
+if("${CONFIG}" STREQUAL "" OR "${CONFIG}" STREQUAL "")
+  file(REMOVE_RECURSE
   "bootloader/bootloader.bin"
   "bootloader/bootloader.elf"
   "bootloader/bootloader.map"
@@ -18,4 +20,5 @@ file(REMOVE_RECURSE
   "ldgen_libraries.in"
   "project_elf_src_esp32.c"
   "x509_crt_bundle.S"
-)
+  )
+endif()
