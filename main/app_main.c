@@ -20,7 +20,10 @@
 #define MANIFEST_URL "https://raw.githubusercontent.com/RbotJ/WebsiteIOT/main/firmware/c6-wroom-1/manifest.json"
 
 static const char *TAG = "OTA";
-static const char current_version[] = "1.0.2";
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+static const char current_version[] = TOSTRING(FIRMWARE_VERSION);
+
 char latest_version[32] = {0};
 bool update_available = false;
 
