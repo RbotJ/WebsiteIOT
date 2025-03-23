@@ -34,9 +34,9 @@ jobs:
     - name: Build Firmware
       run: platformio run
 
-    - name: Rename Firmware File
+    - name: Rename Firmware & Create Version File
       run: |
-        mkdir output
+        mkdir -p output
         cp .pio/build/esp32-c6/firmware.bin output/firmware_${{ steps.auto-version.outputs.version }}.bin
         cp .pio/build/esp32-c6/firmware.bin output/firmware.bin
         echo "${{ steps.auto-version.outputs.version }}" > output/version.txt
@@ -45,14 +45,13 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ steps.auto-version.outputs.version }}
-        name: "Firmware v${{ steps.auto-version.outputs.version }}"
+        name: Firmware v${{ steps.auto-version.outputs.version }}
         body: |
           Auto-generated firmware release.
-          Date: ${{ steps.auto-version.outputs.version }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
+          Timestamp: ${{ steps.auto-version.outputs.version }}
         files: |
           output/firmware_${{ steps.auto-version.outputs.version }}.bin
           output/firmware.bin
           output/version.txt
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
