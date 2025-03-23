@@ -10,7 +10,7 @@ on:
       - '.github/workflows/**'
 
 permissions:
-  contents: write  # ✅ fix indentation
+  contents: write
 
 jobs:
   build-and-release:
@@ -20,7 +20,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}  # ✅ explicitly pass the token
+        token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Set up ESP-IDF environment
       run: |
@@ -48,13 +48,22 @@ jobs:
         cp build/iot_ota_controller.bin firmware/c6-wroom-1/firmware.bin
         echo "${{ env.VERSION }}" > firmware/c6-wroom-1/version.txt
 
-    - name: Commit Firmware Files
+    - name: Generate manifest.json
+      run: |
+        echo "{
+          \"version\": \"v${{ env.VERSION }}\",
+          \"firmware_url\": \"https://github.com/${{ github.repository }}/releases/download/v${{ env.VERSION }}/firmware.bin\",
+          \"released\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\",
+          \"notes\": \"Auto-generated OTA manifest\"
+        }" > firmware/c6-wroom-1/manifest.json
+
+    - name: Commit Firmware Files and Manifest
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
         git add firmware/c6-wroom-1
         git commit -m "Release firmware version ${{ env.VERSION }}"
-        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main  # ✅ fix push authentication
+        git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:main
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v1
@@ -63,10 +72,11 @@ jobs:
         name: Firmware v${{ env.VERSION }}
         body: |
           Auto-generated release for ESP32-C6 firmware.
-          Version: ${{ env.VERSION }}
+          Version: v${{ env.VERSION }}
         files: |
           firmware/c6-wroom-1/firmware_${{ env.VERSION }}.bin
           firmware/c6-wroom-1/firmware.bin
           firmware/c6-wroom-1/version.txt
+          firmware/c6-wroom-1/manifest.json
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
