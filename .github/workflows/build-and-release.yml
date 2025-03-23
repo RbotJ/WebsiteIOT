@@ -31,12 +31,7 @@ jobs:
     - name: Build Firmware
       run: |
         source ./esp-idf/export.sh
-        idf.py build -v
-
-    - name: Show Build Error Log
-      if: failure()
-      run: cat build/log/idf_py_stderr_output_4098 || true
-
+        idf.py --verbose build
 
     - name: Prepare Output Folder
       run: |

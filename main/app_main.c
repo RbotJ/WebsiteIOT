@@ -80,6 +80,13 @@ esp_err_t version_get_handler(httpd_req_t *req) {
     return ESP_OK;
 }
 
+esp_err_t restart_post_handler(httpd_req_t *req) {
+    httpd_resp_send(req, "Rebooting...\n", HTTPD_RESP_USE_STRLEN);
+    vTaskDelay(pdMS_TO_TICKS(1000));  // short delay before reboot
+    esp_restart();
+    return ESP_OK;
+}
+
 esp_err_t trigger_update_handler(httpd_req_t *req) {
     char firmware_url[256];
     if (check_for_update(latest_version, firmware_url)) {
@@ -108,9 +115,17 @@ httpd_handle_t start_webserver(void) {
             .handler = trigger_update_handler
         };
         httpd_register_uri_handler(server, &update_uri);
+
+        httpd_uri_t restart_uri = {
+            .uri = "/restart",
+            .method = HTTP_POST,
+            .handler = restart_post_handler
+        };
+        httpd_register_uri_handler(server, &restart_uri);
     }
     return server;
 }
+
 
 void wifi_prov_event_handler(void* arg, esp_event_base_t event_base,
                              int32_t event_id, void* event_data) {
