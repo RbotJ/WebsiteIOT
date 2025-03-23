@@ -1,0 +1,7 @@
+{
+    "version": "1.0.3",
+    "firmware_url": "https://github.com/RbotJ/WebsiteIOT/releases/latest/download/firmware.bin",
+    "released": "2025-03-22T19:00:00Z",
+    "notes": "Added OTA manifest support and web API"
+  }
+  
