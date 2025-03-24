@@ -34,11 +34,14 @@ jobs:
       run: echo "VERSION=$(date +'%Y.%m.%d.%H%M%S')" >> $GITHUB_ENV
 
     - name: Clean build folder
-      run: rm -rf build
+      run: |
+         rm -rf build
+         rm -f sdkconfig
 
     - name: Build Firmware
       run: |
         source ./esp-idf/export.sh
+        idf.py set-target esp32c6
         idf.py build
 
     - name: Prepare Output Folder
