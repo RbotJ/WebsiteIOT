@@ -1,3 +1,4 @@
+//set esp32 target to c6
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
