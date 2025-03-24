@@ -1,4 +1,4 @@
-//set esp32 target to c6
+//set esp32 target to c6 With 8mb Flash
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
