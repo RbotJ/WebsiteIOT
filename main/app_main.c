@@ -1,4 +1,4 @@
-//Set sdk defaults
+//Set sdk defaults Partion beyond 1mb
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
