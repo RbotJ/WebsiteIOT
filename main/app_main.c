@@ -19,7 +19,7 @@
 #include "wifi_provisioning/manager.h"
 #include "wifi_provisioning/scheme_softap.h"
 
-#define MANIFEST_URL "https://raw.githubusercontent.com/RbotJ/WebsiteIOT/main/firmware/c6-wroom-1/manifest.json"
+#define MANIFEST_URL "https://websiteit-production.up.railway.app/firmware/c6-wroom-1/manifest.json"
 
 static const char *TAG = "OTA";
 
