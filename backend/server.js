@@ -37,11 +37,23 @@ app.get('/api', (req, res) => {
   res.json({ message: 'API is running...' });
 });
 
-// Catch-All for Frontend Routing
+const fs = require('fs');
+
+// Catch-All for Frontend Routing (Angular fallback)
 app.get('*', (req, res, next) => {
   if (req.originalUrl.startsWith('/api')) return next();
+
+  const requestedPath = path.join(frontendPath, req.path);
+
+  // If request matches an actual file (e.g., manifest.json), serve it
+  if (fs.existsSync(requestedPath)) {
+    return res.sendFile(requestedPath);
+  }
+
+  // Otherwise, fall back to Angular's index.html
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
+
 
 // Function to attempt DB connection with retry logic
 async function initializeDatabase() {
