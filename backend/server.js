@@ -12,8 +12,8 @@ app.use(express.json());
 const MAX_RETRIES = 5;
 const RETRY_DELAY = 5000; // 5 seconds
 
-// Serve all static files (including firmware) from /firmware
-const frontendPath = path.join(__dirname, 'firmware');
+// Serve all static files from /public
+const frontendPath = path.join(__dirname, 'public');
 app.use(express.static(frontendPath));
 
 // Optional: Add a basic health check route
