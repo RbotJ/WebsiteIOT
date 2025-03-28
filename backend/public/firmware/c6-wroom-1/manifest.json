@@ -1,6 +1,6 @@
 {
   "version": "v2025.03.25.155052",
-  "firmware_url": "websiteit-production.up.railway.app/firmware/c6-wroom-1/v2025.03.25.155052.bin",
+  "firmware_url": "https://websiteit-production.up.railway.app/firmware/c6-wroom-1/firmware.bin",
   "released": "2025-03-25T15:51:33Z",
   "notes": "Auto-generated OTA manifest"
 }
